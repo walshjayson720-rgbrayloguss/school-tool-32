@@ -33,10 +33,7 @@ header{
   align-items:center;
 }
 
-.tabs{
-  display:flex;
-  gap:8px;
-}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;}
 
 .tab{
   background:transparent;
@@ -46,11 +43,7 @@ header{
   border-radius:6px;
   cursor:pointer;
 }
-
-.tab.active{
-  background:var(--btn);
-  color:white;
-}
+.tab.active{background:var(--btn);color:white;}
 
 button{
   background:var(--btn);
@@ -61,9 +54,7 @@ button{
   cursor:pointer;
 }
 
-.container{
-  padding:20px;
-}
+.container{padding:20px;}
 
 .box{
   background:var(--box);
@@ -81,25 +72,36 @@ input, textarea, select{
   border:none;
 }
 
-.list{
-  margin-top:10px;
-}
+.hidden{display:none;}
 
 .item{
   padding:6px;
-  border-bottom:1px solid rgba(255,255,255,0.1);
+  border-bottom:1px solid rgba(255,255,255,0.15);
 }
 
-.hidden{display:none;}
+.progress{
+  background:#334155;
+  border-radius:10px;
+  overflow:hidden;
+  margin-top:10px;
+}
+.progress div{
+  height:12px;
+  background:#22c55e;
+  width:0%;
+}
 </style>
 </head>
 <body>
 
 <header>
   <div class="tabs">
-    <button class="tab active" onclick="openTab('homework')">Homework</button>
-    <button class="tab" onclick="openTab('notes')">Notes</button>
-    <button class="tab" onclick="openTab('essay')">Essay</button>
+    <button class="tab active" onclick="openTab('homework',this)">Homework</button>
+    <button class="tab" onclick="openTab('notes',this)">Notes</button>
+    <button class="tab" onclick="openTab('essay',this)">Essay</button>
+    <button class="tab" onclick="openTab('calc',this)">Calculator</button>
+    <button class="tab" onclick="openTab('grammar',this)">Grammar</button>
+    <button class="tab" onclick="openTab('ai',this)">AI</button>
   </div>
   <div>
     <button id="themeBtn">Theme</button>
@@ -112,78 +114,112 @@ input, textarea, select{
 <!-- HOMEWORK -->
 <div id="homework" class="box">
   <h3>Homework Planner</h3>
-  <input id="hwTitle" placeholder="Assignment name">
+  <input id="hwTitle" placeholder="Assignment">
   <input id="hwClass" placeholder="Class">
   <input id="hwDate" type="date">
   <button onclick="addHomework()">Add</button>
-  <div id="hwList" class="list"></div>
+
+  <div class="progress"><div id="hwProgress"></div></div>
+  <div id="hwList"></div>
 </div>
 
 <!-- NOTES -->
 <div id="notes" class="box hidden">
-  <h3>Notes Organizer</h3>
+  <h3>Notes</h3>
   <input id="noteClass" placeholder="Class">
-  <textarea id="noteText" rows="4" placeholder="Write notes..."></textarea>
+  <textarea id="noteText" rows="4"></textarea>
   <button onclick="saveNote()">Save</button>
-  <input id="searchNotes" placeholder="Search notes" oninput="renderNotes()">
-  <div id="noteList" class="list"></div>
+  <input id="searchNotes" placeholder="Search" oninput="renderNotes()">
+  <div id="noteList"></div>
 </div>
 
 <!-- ESSAY -->
 <div id="essay" class="box hidden">
   <h3>Essay Outline Generator</h3>
-  <input id="essayTopic" placeholder="Essay topic">
+  <input id="essayTopic" placeholder="Topic">
   <select id="essayLength">
     <option>Short (3 paragraphs)</option>
     <option>Medium (5 paragraphs)</option>
     <option>Long (7 paragraphs)</option>
   </select>
   <button onclick="generateOutline()">Generate</button>
-  <div id="essayOutput" class="list"></div>
+  <div id="essayOutput"></div>
+</div>
+
+<!-- CALCULATOR -->
+<div id="calc" class="box hidden">
+  <h3>Calculator</h3>
+  <input id="calcInput" placeholder="Example: 7*(3+2)">
+  <button onclick="calculate()">Calculate</button>
+  <div id="calcResult"></div>
+</div>
+
+<!-- GRAMMAR -->
+<div id="grammar" class="box hidden">
+  <h3>Grammar Corrector</h3>
+  <textarea id="grammarInput" rows="5"></textarea>
+  <button onclick="fixGrammar()">Fix</button>
+  <div id="grammarOutput"></div>
+</div>
+
+<!-- AI -->
+<div id="ai" class="box hidden">
+  <h3>AI Assistant</h3>
+  <input id="aiInput" placeholder="Ask something">
+  <button onclick="askAI()">Ask</button>
+  <div id="aiOutput"></div>
 </div>
 
 </div>
 
 <script>
-// ABOUT:BLANK
+// about:blank
 blankBtn.onclick=()=>{
   const w=window.open("about:blank");
   w.document.write(`<iframe src="${location.href}" style="border:none;width:100vw;height:100vh;"></iframe>`);
 };
 
-// THEME
+// theme
 if(localStorage.theme==="light")document.body.classList.add("light");
 themeBtn.onclick=()=>{
   document.body.classList.toggle("light");
   localStorage.theme=document.body.classList.contains("light")?"light":"dark";
 };
 
-// TABS
-function openTab(id){
+// tabs
+function openTab(id,btn){
   document.querySelectorAll(".box").forEach(b=>b.classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
-
   document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-  event.target.classList.add("active");
+  btn.classList.add("active");
 }
 
-// HOMEWORK
+// homework + progress
 function addHomework(){
   const hw=JSON.parse(localStorage.hw||"[]");
-  hw.push({title:hwTitle.value,class:hwClass.value,date:hwDate.value});
+  hw.push({title:hwTitle.value,class:hwClass.value,date:hwDate.value,done:false});
+  localStorage.hw=JSON.stringify(hw);
+  renderHomework();
+}
+function toggleDone(i){
+  const hw=JSON.parse(localStorage.hw||"[]");
+  hw[i].done=!hw[i].done;
   localStorage.hw=JSON.stringify(hw);
   renderHomework();
 }
 function renderHomework(){
-  const hw=JSON.parse(localStorage.hw||"[]")
-    .sort((a,b)=>new Date(a.date)-new Date(b.date));
-  hwList.innerHTML=hw.map(h=>
-    `<div class="item"><b>${h.title}</b> (${h.class})<br>Due: ${h.date}</div>`
-  ).join("");
+  const hw=JSON.parse(localStorage.hw||"[]");
+  hwList.innerHTML=hw.map((h,i)=>`
+    <div class="item">
+      <input type="checkbox" ${h.done?"checked":""} onclick="toggleDone(${i})">
+      <b>${h.title}</b> (${h.class}) – ${h.date}
+    </div>`).join("");
+  const done=hw.filter(h=>h.done).length;
+  hwProgress.style.width=(hw.length?done/hw.length*100:0)+"%";
 }
 renderHomework();
 
-// NOTES
+// notes
 function saveNote(){
   const n=JSON.parse(localStorage.notes||"[]");
   n.push({class:noteClass.value,text:noteText.value});
@@ -196,24 +232,44 @@ function renderNotes(){
   const n=JSON.parse(localStorage.notes||"[]");
   noteList.innerHTML=n
     .filter(x=>x.text.toLowerCase().includes(q)||x.class.toLowerCase().includes(q))
-    .map(x=>`<div class="item"><b>${x.class}</b><br>${x.text}</div>`)
-    .join("");
+    .map(x=>`<div class="item"><b>${x.class}</b><br>${x.text}</div>`).join("");
 }
 renderNotes();
 
-// ESSAY
+// essay
 function generateOutline(){
   const t=essayTopic.value;
   const l=essayLength.value;
-  let body=l.includes("3")?1:l.includes("5")?3:5;
+  let b=l.includes("3")?1:l.includes("5")?3:5;
+  let out=`<b>Introduction</b>: Thesis about "${t}"<br><br>`;
+  for(let i=1;i<=b;i++)out+=`• Body Paragraph ${i}<br>`;
+  out+=`<br><b>Conclusion</b>: Summary`;
+  essayOutput.innerHTML=out;
+}
 
-  let html=`<b>Introduction</b>: Thesis about "${t}"<br><br>`;
-  for(let i=1;i<=body;i++){
-    html+=`• Body Paragraph ${i}: Key idea + evidence<br>`;
-  }
-  html+=`<br><b>Conclusion</b>: Restate thesis + closing thought`;
+// calculator
+function calculate(){
+  try{calcResult.innerText="Result: "+eval(calcInput.value);}
+  catch{calcResult.innerText="Invalid";}
+}
 
-  essayOutput.innerHTML=html;
+// grammar
+function fixGrammar(){
+  let t=grammarInput.value.trim()
+    .replace(/\s+/g," ")
+    .replace(/([^.?!])$/,"$1.")
+    .replace(/\bi\b/g,"I");
+  grammarOutput.innerText=t.charAt(0).toUpperCase()+t.slice(1);
+}
+
+// AI
+function askAI(){
+  const q=aiInput.value.toLowerCase();
+  let r="I am not sure yet.";
+  if(q.includes("homework"))r="Use the homework tab to track assignments.";
+  else if(q.includes("essay"))r="The essay tab generates outlines.";
+  else if(q.includes("calculator"))r="The calculator tab solves math.";
+  aiOutput.innerText=r;
 }
 </script>
 
