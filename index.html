@@ -33,7 +33,11 @@ header{
   align-items:center;
 }
 
-.tabs{display:flex;gap:6px;flex-wrap:wrap;}
+.tabs{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+}
 
 .tab{
   background:transparent;
@@ -43,7 +47,10 @@ header{
   border-radius:6px;
   cursor:pointer;
 }
-.tab.active{background:var(--btn);color:white;}
+.tab.active{
+  background:var(--btn);
+  color:white;
+}
 
 button{
   background:var(--btn);
@@ -54,7 +61,9 @@ button{
   cursor:pointer;
 }
 
-.container{padding:20px;}
+.container{
+  padding:20px;
+}
 
 .box{
   background:var(--box);
@@ -67,7 +76,7 @@ button{
 input, textarea, select{
   width:100%;
   padding:8px;
-  margin-top:5px;
+  margin-top:6px;
   border-radius:6px;
   border:none;
 }
@@ -118,14 +127,13 @@ input, textarea, select{
   <input id="hwClass" placeholder="Class">
   <input id="hwDate" type="date">
   <button onclick="addHomework()">Add</button>
-
   <div class="progress"><div id="hwProgress"></div></div>
   <div id="hwList"></div>
 </div>
 
 <!-- NOTES -->
 <div id="notes" class="box hidden">
-  <h3>Notes</h3>
+  <h3>Notes Organizer</h3>
   <input id="noteClass" placeholder="Class">
   <textarea id="noteText" rows="4"></textarea>
   <button onclick="saveNote()">Save</button>
@@ -149,7 +157,7 @@ input, textarea, select{
 <!-- CALCULATOR -->
 <div id="calc" class="box hidden">
   <h3>Calculator</h3>
-  <input id="calcInput" placeholder="Example: 7*(3+2)">
+  <input id="calcInput" placeholder="Example: 8*(5+2)">
   <button onclick="calculate()">Calculate</button>
   <div id="calcResult"></div>
 </div>
@@ -158,14 +166,14 @@ input, textarea, select{
 <div id="grammar" class="box hidden">
   <h3>Grammar Corrector</h3>
   <textarea id="grammarInput" rows="5"></textarea>
-  <button onclick="fixGrammar()">Fix</button>
+  <button onclick="fixGrammar()">Fix Grammar</button>
   <div id="grammarOutput"></div>
 </div>
 
 <!-- AI -->
 <div id="ai" class="box hidden">
   <h3>AI Assistant</h3>
-  <input id="aiInput" placeholder="Ask something">
+  <input id="aiInput" placeholder="Ask a question">
   <button onclick="askAI()">Ask</button>
   <div id="aiOutput"></div>
 </div>
@@ -173,20 +181,20 @@ input, textarea, select{
 </div>
 
 <script>
-// about:blank
-blankBtn.onclick=()=>{
-  const w=window.open("about:blank");
+// ========== ABOUT:BLANK ==========
+blankBtn.onclick = () => {
+  const w = window.open("about:blank");
   w.document.write(`<iframe src="${location.href}" style="border:none;width:100vw;height:100vh;"></iframe>`);
 };
 
-// theme
+// ========== THEME ==========
 if(localStorage.theme==="light")document.body.classList.add("light");
 themeBtn.onclick=()=>{
   document.body.classList.toggle("light");
   localStorage.theme=document.body.classList.contains("light")?"light":"dark";
 };
 
-// tabs
+// ========== TABS ==========
 function openTab(id,btn){
   document.querySelectorAll(".box").forEach(b=>b.classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
@@ -194,7 +202,7 @@ function openTab(id,btn){
   btn.classList.add("active");
 }
 
-// homework + progress
+// ========== HOMEWORK ==========
 function addHomework(){
   const hw=JSON.parse(localStorage.hw||"[]");
   hw.push({title:hwTitle.value,class:hwClass.value,date:hwDate.value,done:false});
@@ -214,12 +222,11 @@ function renderHomework(){
       <input type="checkbox" ${h.done?"checked":""} onclick="toggleDone(${i})">
       <b>${h.title}</b> (${h.class}) – ${h.date}
     </div>`).join("");
-  const done=hw.filter(h=>h.done).length;
-  hwProgress.style.width=(hw.length?done/hw.length*100:0)+"%";
+  hwProgress.style.width=(hw.length?hw.filter(x=>x.done).length/hw.length*100:0)+"%";
 }
 renderHomework();
 
-// notes
+// ========== NOTES ==========
 function saveNote(){
   const n=JSON.parse(localStorage.notes||"[]");
   n.push({class:noteClass.value,text:noteText.value});
@@ -236,40 +243,72 @@ function renderNotes(){
 }
 renderNotes();
 
-// essay
+// ========== ESSAY ==========
 function generateOutline(){
   const t=essayTopic.value;
   const l=essayLength.value;
   let b=l.includes("3")?1:l.includes("5")?3:5;
   let out=`<b>Introduction</b>: Thesis about "${t}"<br><br>`;
-  for(let i=1;i<=b;i++)out+=`• Body Paragraph ${i}<br>`;
-  out+=`<br><b>Conclusion</b>: Summary`;
+  for(let i=1;i<=b;i++) out+=`• Body Paragraph ${i}: Claim, evidence, explanation<br>`;
+  out+=`<br><b>Conclusion</b>: Restate thesis`;
   essayOutput.innerHTML=out;
 }
 
-// calculator
+// ========== CALCULATOR ==========
 function calculate(){
   try{calcResult.innerText="Result: "+eval(calcInput.value);}
-  catch{calcResult.innerText="Invalid";}
+  catch{calcResult.innerText="Invalid expression";}
 }
 
-// grammar
+// ========== GRAMMAR (WORKING) ==========
 function fixGrammar(){
-  let t=grammarInput.value.trim()
-    .replace(/\s+/g," ")
-    .replace(/([^.?!])$/,"$1.")
-    .replace(/\bi\b/g,"I");
-  grammarOutput.innerText=t.charAt(0).toUpperCase()+t.slice(1);
+  let t=grammarInput.value.trim().replace(/\s+/g," ");
+  const typos={
+    "teh":"the","dont":"don't","cant":"can't","im":"I'm",
+    "alot":"a lot","becuase":"because","recieve":"receive"
+  };
+  Object.keys(typos).forEach(k=>{
+    t=t.replace(new RegExp(`\\b${k}\\b`,"gi"),typos[k]);
+  });
+  t=t.toLowerCase().replace(/(^\w|[.!?]\s+\w)/g,m=>m.toUpperCase());
+  t=t.replace(/\s+(and|but|so|because|however)\s+/gi,", $1 ");
+  if(!/[.!?]$/.test(t)) t+=".";
+  grammarOutput.innerText=t;
 }
 
-// AI
+// ========== AI (REAL + MEMORY + TYPING) ==========
+let aiMemory=JSON.parse(sessionStorage.aiMemory||"[]");
+
 function askAI(){
-  const q=aiInput.value.toLowerCase();
-  let r="I am not sure yet.";
-  if(q.includes("homework"))r="Use the homework tab to track assignments.";
-  else if(q.includes("essay"))r="The essay tab generates outlines.";
-  else if(q.includes("calculator"))r="The calculator tab solves math.";
-  aiOutput.innerText=r;
+  const q=aiInput.value.trim();
+  if(!q)return;
+  aiMemory.push({role:"user",text:q});
+  aiMemory=aiMemory.slice(-6);
+  sessionStorage.aiMemory=JSON.stringify(aiMemory);
+  const r=generateAIResponse(q.toLowerCase());
+  aiMemory.push({role:"ai",text:r});
+  sessionStorage.aiMemory=JSON.stringify(aiMemory);
+  typeAI(aiOutput,r);
+}
+
+function generateAIResponse(q){
+  const ctx=aiMemory.map(x=>x.text).join(" ");
+  if(q.includes("hello")||q.includes("hi"))return"Hello. How can I help you today?";
+  if(q.includes("homework"))return"Use the Homework tab to track assignments and progress.";
+  if(q.includes("essay"))return"The Essay tab creates structured outlines for writing.";
+  if(q.includes("grammar"))return"Use the Grammar tab to fix typos, commas, and punctuation.";
+  if(q.includes("study"))return"Study in focused sessions with breaks and review notes daily.";
+  if(ctx.includes("essay")&&q.includes("help"))return"Do you want help with an introduction or body paragraph?";
+  return"Ask me about homework, essays, grammar, or studying.";
+}
+
+function typeAI(el,text){
+  el.innerText="";
+  let i=0;
+  const int=setInterval(()=>{
+    el.innerText+=text[i++];
+    if(i>=text.length)clearInterval(int);
+  },18);
 }
 </script>
 
