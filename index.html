@@ -7,97 +7,103 @@
 
 <style>
 :root{
-  --bg:#0f172a;
-  --box:#020617;
-  --text:white;
-  --btn:#2563eb;
+  --bg:#0b0f1a;
+  --panel:#111827;
+  --card:#020617;
+  --border:#1f2933;
+  --accent:#6366f1;
+  --text:#e5e7eb;
+  --muted:#9ca3af;
 }
 .light{
-  --bg:#f1f5f9;
-  --box:#ffffff;
+  --bg:#f8fafc;
+  --panel:#ffffff;
+  --card:#f1f5f9;
+  --border:#e5e7eb;
   --text:#020617;
+  --muted:#64748b;
 }
-
+*{box-sizing:border-box}
 body{
   margin:0;
-  font-family:Arial,sans-serif;
   background:var(--bg);
   color:var(--text);
+  font-family:Inter,system-ui,Arial,sans-serif;
 }
-
 header{
-  background:var(--box);
-  padding:12px;
+  position:sticky;
+  top:0;
+  z-index:10;
+  background:var(--panel);
+  border-bottom:1px solid var(--border);
+  padding:10px 16px;
   display:flex;
   justify-content:space-between;
   align-items:center;
 }
-
-.tabs{
-  display:flex;
-  gap:6px;
-  flex-wrap:wrap;
-}
-
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
 .tab{
   background:transparent;
-  color:var(--text);
-  border:1px solid var(--btn);
-  padding:6px 10px;
-  border-radius:6px;
+  color:var(--muted);
+  border:none;
+  padding:8px 12px;
+  border-radius:8px;
   cursor:pointer;
 }
-.tab.active{
-  background:var(--btn);
-  color:white;
-}
-
-button{
-  background:var(--btn);
+.tab.active{background:var(--accent);color:white}
+button.action{
+  background:var(--accent);
   color:white;
   border:none;
   padding:8px 12px;
-  border-radius:6px;
+  border-radius:8px;
   cursor:pointer;
 }
-
-.container{
-  padding:20px;
-}
-
+.container{padding:24px}
 .box{
-  background:var(--box);
-  padding:15px;
-  border-radius:10px;
   max-width:900px;
   margin:auto;
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:20px;
 }
-
-input, textarea, select{
+.hidden{display:none}
+input,textarea,select{
   width:100%;
-  padding:8px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px;
+  color:var(--text);
   margin-top:6px;
-  border-radius:6px;
-  border:none;
 }
-
-.hidden{display:none;}
-
-.item{
-  padding:6px;
-  border-bottom:1px solid rgba(255,255,255,0.15);
-}
-
+.item{padding:10px;border-bottom:1px solid var(--border)}
 .progress{
-  background:#334155;
-  border-radius:10px;
+  background:var(--card);
+  border-radius:999px;
   overflow:hidden;
-  margin-top:10px;
+  height:10px;
+  margin:10px 0;
 }
 .progress div{
-  height:12px;
-  background:#22c55e;
+  height:100%;
+  background:linear-gradient(90deg,#22c55e,#16a34a);
   width:0%;
+}
+.ai-bubble{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:12px;
+  margin-top:10px;
+  white-space:pre-wrap;
+}
+mark{
+  background:#fde047;
+  color:black;
+  padding:0 3px;
+  border-radius:4px;
 }
 </style>
 </head>
@@ -113,88 +119,73 @@ input, textarea, select{
     <button class="tab" onclick="openTab('ai',this)">AI</button>
   </div>
   <div>
-    <button id="themeBtn">Theme</button>
-    <button id="blankBtn">about:blank</button>
+    <button class="action" id="themeBtn">Theme</button>
+    <button class="action" id="blankBtn">about:blank</button>
   </div>
 </header>
 
 <div class="container">
 
-<!-- HOMEWORK -->
 <div id="homework" class="box">
   <h3>Homework Planner</h3>
   <input id="hwTitle" placeholder="Assignment">
   <input id="hwClass" placeholder="Class">
   <input id="hwDate" type="date">
-  <button onclick="addHomework()">Add</button>
+  <button class="action" onclick="addHomework()">Add</button>
   <div class="progress"><div id="hwProgress"></div></div>
   <div id="hwList"></div>
 </div>
 
-<!-- NOTES -->
 <div id="notes" class="box hidden">
-  <h3>Notes Organizer</h3>
+  <h3>Notes</h3>
   <input id="noteClass" placeholder="Class">
-  <textarea id="noteText" rows="4"></textarea>
-  <button onclick="saveNote()">Save</button>
-  <input id="searchNotes" placeholder="Search" oninput="renderNotes()">
+  <textarea id="noteText"></textarea>
+  <button class="action" onclick="saveNote()">Save</button>
   <div id="noteList"></div>
 </div>
 
-<!-- ESSAY -->
 <div id="essay" class="box hidden">
-  <h3>Essay Outline Generator</h3>
+  <h3>Essay Outline</h3>
   <input id="essayTopic" placeholder="Topic">
-  <select id="essayLength">
-    <option>Short (3 paragraphs)</option>
-    <option>Medium (5 paragraphs)</option>
-    <option>Long (7 paragraphs)</option>
-  </select>
-  <button onclick="generateOutline()">Generate</button>
+  <button class="action" onclick="generateOutline()">Generate</button>
   <div id="essayOutput"></div>
 </div>
 
-<!-- CALCULATOR -->
 <div id="calc" class="box hidden">
   <h3>Calculator</h3>
-  <input id="calcInput" placeholder="Example: 8*(5+2)">
-  <button onclick="calculate()">Calculate</button>
+  <input id="calcInput">
+  <button class="action" onclick="calculate()">Calculate</button>
   <div id="calcResult"></div>
 </div>
 
-<!-- GRAMMAR -->
 <div id="grammar" class="box hidden">
-  <h3>Grammar Corrector</h3>
+  <h3>Grammar Corrector (Highlighted)</h3>
   <textarea id="grammarInput" rows="5"></textarea>
-  <button onclick="fixGrammar()">Fix Grammar</button>
-  <div id="grammarOutput"></div>
+  <button class="action" onclick="fixGrammar()">Fix Grammar</button>
+  <div id="grammarOutput" class="ai-bubble"></div>
 </div>
 
-<!-- AI -->
 <div id="ai" class="box hidden">
   <h3>AI Assistant</h3>
-  <input id="aiInput" placeholder="Ask a question">
-  <button onclick="askAI()">Ask</button>
-  <div id="aiOutput"></div>
+  <input id="aiInput" placeholder="Write an introduction about...">
+  <button class="action" onclick="askAI()">Ask</button>
+  <div id="aiOutput" class="ai-bubble"></div>
 </div>
 
 </div>
 
 <script>
-// ========== ABOUT:BLANK ==========
-blankBtn.onclick = () => {
-  const w = window.open("about:blank");
-  w.document.write(`<iframe src="${location.href}" style="border:none;width:100vw;height:100vh;"></iframe>`);
+blankBtn.onclick=()=>{
+  const w=window.open("about:blank");
+  w.document.write(`<iframe src="${location.href}" style="border:none;width:100vw;height:100vh"></iframe>`);
 };
 
-// ========== THEME ==========
 if(localStorage.theme==="light")document.body.classList.add("light");
 themeBtn.onclick=()=>{
   document.body.classList.toggle("light");
   localStorage.theme=document.body.classList.contains("light")?"light":"dark";
 };
 
-// ========== TABS ==========
 function openTab(id,btn){
   document.querySelectorAll(".box").forEach(b=>b.classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
@@ -202,113 +193,39 @@ function openTab(id,btn){
   btn.classList.add("active");
 }
 
-// ========== HOMEWORK ==========
-function addHomework(){
-  const hw=JSON.parse(localStorage.hw||"[]");
-  hw.push({title:hwTitle.value,class:hwClass.value,date:hwDate.value,done:false});
-  localStorage.hw=JSON.stringify(hw);
-  renderHomework();
-}
-function toggleDone(i){
-  const hw=JSON.parse(localStorage.hw||"[]");
-  hw[i].done=!hw[i].done;
-  localStorage.hw=JSON.stringify(hw);
-  renderHomework();
-}
-function renderHomework(){
-  const hw=JSON.parse(localStorage.hw||"[]");
-  hwList.innerHTML=hw.map((h,i)=>`
-    <div class="item">
-      <input type="checkbox" ${h.done?"checked":""} onclick="toggleDone(${i})">
-      <b>${h.title}</b> (${h.class}) – ${h.date}
-    </div>`).join("");
-  hwProgress.style.width=(hw.length?hw.filter(x=>x.done).length/hw.length*100:0)+"%";
-}
-renderHomework();
-
-// ========== NOTES ==========
-function saveNote(){
-  const n=JSON.parse(localStorage.notes||"[]");
-  n.push({class:noteClass.value,text:noteText.value});
-  localStorage.notes=JSON.stringify(n);
-  noteText.value="";
-  renderNotes();
-}
-function renderNotes(){
-  const q=searchNotes.value.toLowerCase();
-  const n=JSON.parse(localStorage.notes||"[]");
-  noteList.innerHTML=n
-    .filter(x=>x.text.toLowerCase().includes(q)||x.class.toLowerCase().includes(q))
-    .map(x=>`<div class="item"><b>${x.class}</b><br>${x.text}</div>`).join("");
-}
-renderNotes();
-
-// ========== ESSAY ==========
-function generateOutline(){
-  const t=essayTopic.value;
-  const l=essayLength.value;
-  let b=l.includes("3")?1:l.includes("5")?3:5;
-  let out=`<b>Introduction</b>: Thesis about "${t}"<br><br>`;
-  for(let i=1;i<=b;i++) out+=`• Body Paragraph ${i}: Claim, evidence, explanation<br>`;
-  out+=`<br><b>Conclusion</b>: Restate thesis`;
-  essayOutput.innerHTML=out;
-}
-
-// ========== CALCULATOR ==========
-function calculate(){
-  try{calcResult.innerText="Result: "+eval(calcInput.value);}
-  catch{calcResult.innerText="Invalid expression";}
-}
-
-// ========== GRAMMAR (WORKING) ==========
 function fixGrammar(){
   let t=grammarInput.value.trim().replace(/\s+/g," ");
-  const typos={
-    "teh":"the","dont":"don't","cant":"can't","im":"I'm",
-    "alot":"a lot","becuase":"because","recieve":"receive"
-  };
-  Object.keys(typos).forEach(k=>{
-    t=t.replace(new RegExp(`\\b${k}\\b`,"gi"),typos[k]);
-  });
-  t=t.toLowerCase().replace(/(^\w|[.!?]\s+\w)/g,m=>m.toUpperCase());
-  t=t.replace(/\s+(and|but|so|because|however)\s+/gi,", $1 ");
-  if(!/[.!?]$/.test(t)) t+=".";
-  grammarOutput.innerText=t;
+  const fixes={teh:"the",dont:"don't",cant:"can't",im:"I'm",alot:"a lot"};
+  for(const k in fixes){
+    t=t.replace(new RegExp(`\\b${k}\\b`,"gi"),`<mark>${fixes[k]}</mark>`);
+  }
+  t=t.replace(/(^\w|[.!?]\s+\w)/g,m=>`<mark>${m}</mark>`);
+  if(!/[.!?]$/.test(t))t+=`<mark>.</mark>`;
+  grammarOutput.innerHTML=t;
 }
-
-// ========== AI (REAL + MEMORY + TYPING) ==========
-let aiMemory=JSON.parse(sessionStorage.aiMemory||"[]");
 
 function askAI(){
-  const q=aiInput.value.trim();
-  if(!q)return;
-  aiMemory.push({role:"user",text:q});
-  aiMemory=aiMemory.slice(-6);
-  sessionStorage.aiMemory=JSON.stringify(aiMemory);
-  const r=generateAIResponse(q.toLowerCase());
-  aiMemory.push({role:"ai",text:r});
-  sessionStorage.aiMemory=JSON.stringify(aiMemory);
-  typeAI(aiOutput,r);
+  const q=aiInput.value.toLowerCase();
+  let out="";
+  if(q.includes("introduction")){
+    out="This introduction presents the topic clearly and provides background information while ending with a strong thesis statement that sets up the rest of the essay.";
+  }else if(q.includes("body paragraph")){
+    out="This body paragraph explains the main idea, supports it with evidence, and connects it back to the thesis through clear reasoning.";
+  }else if(q.includes("conclusion")){
+    out="In conclusion, the topic is summarized by restating the thesis, reviewing key points, and leaving the reader with a final thought.";
+  }else{
+    out="I can write essay paragraphs, explain topics, or help you study. Try asking for an introduction, body paragraph, or conclusion.";
+  }
+  aiOutput.innerText=out;
 }
 
-function generateAIResponse(q){
-  const ctx=aiMemory.map(x=>x.text).join(" ");
-  if(q.includes("hello")||q.includes("hi"))return"Hello. How can I help you today?";
-  if(q.includes("homework"))return"Use the Homework tab to track assignments and progress.";
-  if(q.includes("essay"))return"The Essay tab creates structured outlines for writing.";
-  if(q.includes("grammar"))return"Use the Grammar tab to fix typos, commas, and punctuation.";
-  if(q.includes("study"))return"Study in focused sessions with breaks and review notes daily.";
-  if(ctx.includes("essay")&&q.includes("help"))return"Do you want help with an introduction or body paragraph?";
-  return"Ask me about homework, essays, grammar, or studying.";
+function calculate(){
+  try{calcResult.innerText=eval(calcInput.value);}
+  catch{calcResult.innerText="Error";}
 }
 
-function typeAI(el,text){
-  el.innerText="";
-  let i=0;
-  const int=setInterval(()=>{
-    el.innerText+=text[i++];
-    if(i>=text.length)clearInterval(int);
-  },18);
+function generateOutline(){
+  essayOutput.innerHTML="<b>Introduction</b><br>• Hook<br>• Thesis<br><br><b>Body</b><br>• Point 1<br>• Point 2<br><br><b>Conclusion</b>";
 }
 </script>
 
