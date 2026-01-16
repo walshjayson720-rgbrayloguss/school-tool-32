@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>School Tool Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+:root{
+  --bg:#0f172a;
+  --box:#020617;
+  --text:white;
+  --btn:#2563eb;
+}
+.light{
+  --bg:#f1f5f9;
+  --box:#ffffff;
+  --text:#020617;
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+header{
+  background:var(--box);
+  padding:12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.tabs{
+  display:flex;
+  gap:8px;
+}
+
+.tab{
+  background:transparent;
+  color:var(--text);
+  border:1px solid var(--btn);
+  padding:6px 10px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.tab.active{
+  background:var(--btn);
+  color:white;
+}
+
+button{
+  background:var(--btn);
+  color:white;
+  border:none;
+  padding:8px 12px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.container{
+  padding:20px;
+}
+
+.box{
+  background:var(--box);
+  padding:15px;
+  border-radius:10px;
+  max-width:900px;
+  margin:auto;
+}
+
+input, textarea, select{
+  width:100%;
+  padding:8px;
+  margin-top:5px;
+  border-radius:6px;
+  border:none;
+}
+
+.list{
+  margin-top:10px;
+}
+
+.item{
+  padding:6px;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+}
+
+.hidden{display:none;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tabs">
+    <button class="tab active" onclick="openTab('homework')">Homework</button>
+    <button class="tab" onclick="openTab('notes')">Notes</button>
+    <button class="tab" onclick="openTab('essay')">Essay</button>
+  </div>
+  <div>
+    <button id="themeBtn">Theme</button>
+    <button id="blankBtn">about:blank</button>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- HOMEWORK -->
+<div id="homework" class="box">
+  <h3>Homework Planner</h3>
+  <input id="hwTitle" placeholder="Assignment name">
+  <input id="hwClass" placeholder="Class">
+  <input id="hwDate" type="date">
+  <button onclick="addHomework()">Add</button>
+  <div id="hwList" class="list"></div>
+</div>
+
+<!-- NOTES -->
+<div id="notes" class="box hidden">
+  <h3>Notes Organizer</h3>
+  <input id="noteClass" placeholder="Class">
+  <textarea id="noteText" rows="4" placeholder="Write notes..."></textarea>
+  <button onclick="saveNote()">Save</button>
+  <input id="searchNotes" placeholder="Search notes" oninput="renderNotes()">
+  <div id="noteList" class="list"></div>
+</div>
+
+<!-- ESSAY -->
+<div id="essay" class="box hidden">
+  <h3>Essay Outline Generator</h3>
+  <input id="essayTopic" placeholder="Essay topic">
+  <select id="essayLength">
+    <option>Short (3 paragraphs)</option>
+    <option>Medium (5 paragraphs)</option>
+    <option>Long (7 paragraphs)</option>
+  </select>
+  <button onclick="generateOutline()">Generate</button>
+  <div id="essayOutput" class="list"></div>
+</div>
+
+</div>
+
+<script>
+// ABOUT:BLANK
+blankBtn.onclick=()=>{
+  const w=window.open("about:blank");
+  w.document.write(`<iframe src="${location.href}" style="border:none;width:100vw;height:100vh;"></iframe>`);
+};
+
+// THEME
+if(localStorage.theme==="light")document.body.classList.add("light");
+themeBtn.onclick=()=>{
+  document.body.classList.toggle("light");
+  localStorage.theme=document.body.classList.contains("light")?"light":"dark";
+};
+
+// TABS
+function openTab(id){
+  document.querySelectorAll(".box").forEach(b=>b.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  event.target.classList.add("active");
+}
+
+// HOMEWORK
+function addHomework(){
+  const hw=JSON.parse(localStorage.hw||"[]");
+  hw.push({title:hwTitle.value,class:hwClass.value,date:hwDate.value});
+  localStorage.hw=JSON.stringify(hw);
+  renderHomework();
+}
+function renderHomework(){
+  const hw=JSON.parse(localStorage.hw||"[]")
+    .sort((a,b)=>new Date(a.date)-new Date(b.date));
+  hwList.innerHTML=hw.map(h=>
+    `<div class="item"><b>${h.title}</b> (${h.class})<br>Due: ${h.date}</div>`
+  ).join("");
+}
+renderHomework();
+
+// NOTES
+function saveNote(){
+  const n=JSON.parse(localStorage.notes||"[]");
+  n.push({class:noteClass.value,text:noteText.value});
+  localStorage.notes=JSON.stringify(n);
+  noteText.value="";
+  renderNotes();
+}
+function renderNotes(){
+  const q=searchNotes.value.toLowerCase();
+  const n=JSON.parse(localStorage.notes||"[]");
+  noteList.innerHTML=n
+    .filter(x=>x.text.toLowerCase().includes(q)||x.class.toLowerCase().includes(q))
+    .map(x=>`<div class="item"><b>${x.class}</b><br>${x.text}</div>`)
+    .join("");
+}
+renderNotes();
+
+// ESSAY
+function generateOutline(){
+  const t=essayTopic.value;
+  const l=essayLength.value;
+  let body=l.includes("3")?1:l.includes("5")?3:5;
+
+  let html=`<b>Introduction</b>: Thesis about "${t}"<br><br>`;
+  for(let i=1;i<=body;i++){
+    html+=`• Body Paragraph ${i}: Key idea + evidence<br>`;
+  }
+  html+=`<br><b>Conclusion</b>: Restate thesis + closing thought`;
+
+  essayOutput.innerHTML=html;
+}
+</script>
+
+</body>
+</html>
